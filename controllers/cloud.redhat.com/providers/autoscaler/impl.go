@@ -23,7 +23,7 @@ func (asp *autoscalerProvider) makeAutoScalers(deployment *crd.Deployment, app *
 		return err
 	}
 
-	initAutoScaler(app, d, s, nn, deployment, c)
+	asp.initAutoScaler(app, d, s, nn, deployment, c)
 
 	if err := asp.Cache.Update(CoreAutoScaler, s); err != nil {
 		return err
@@ -32,7 +32,7 @@ func (asp *autoscalerProvider) makeAutoScalers(deployment *crd.Deployment, app *
 	return nil
 }
 
-func initAutoScaler(app *crd.ClowdApp, d *apps.Deployment, s *keda.ScaledObject, nn types.NamespacedName, deployment *crd.Deployment, c *config.AppConfig) {
+func (asp *autoscalerProvider) initAutoScaler(app *crd.ClowdApp, d *apps.Deployment, s *keda.ScaledObject, nn types.NamespacedName, deployment *crd.Deployment, c *config.AppConfig) {
 	labels := app.GetLabels()
 	labels["pod"] = nn.Name
 	app.SetObjectMeta(s, crd.Name(nn.Name), crd.Labels(labels))
@@ -66,7 +66,7 @@ func initAutoScaler(app *crd.ClowdApp, d *apps.Deployment, s *keda.ScaledObject,
 	triggers := []keda.ScaleTriggers{}
 	for _, trigger := range deployment.AutoScaler.Triggers {
 
-		triggerType := getTriggerRoute(trigger.Type, c)
+		triggerType := asp.getTriggerRoute(trigger.Type, c)
 		for k, v := range triggerType {
 			trigger.Metadata[k] = v
 		}
@@ -78,7 +78,7 @@ func initAutoScaler(app *crd.ClowdApp, d *apps.Deployment, s *keda.ScaledObject,
 	s.Spec = scalerSpec
 }
 
-func getTriggerRoute(triggerType string, c *config.AppConfig) map[string]string {
+func (asp *autoscalerProvider) getTriggerRoute(triggerType string, c *config.AppConfig) map[string]string {
 	result := map[string]string{}
 	switch triggerType {
 	case "kafka":
@@ -119,6 +119,7 @@ func getTriggerRoute(triggerType string, c *config.AppConfig) map[string]string 
 	case "openstack-swift":
 	case "postgresql":
 	case "prometheus":
+		result["serverAddress"] = fmt.Sprintf("http://%s:9090", asp.Env.Status.Prometheus.Hostname)
 	case "rabbitmq":
 	case "redis":
 	case "redis-cluster":
