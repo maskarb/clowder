@@ -5,9 +5,8 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Kafka Provider :: Clowder Documentation</title>
     <link rel="canonical" href="https://redhatinsights.github.io/clowder/clowder/dev/providers/kafka.html">
-    <meta name="generator" content="Antora 2.3.4">
+    <meta name="generator" content="Antora 3.1.4">
     <link rel="stylesheet" href="../../../ui/css/site.css">
-    <script>var uiRootPath = '../../../ui'</script>
   </head>
   <body class="article">
 <header class="header">
@@ -39,14 +38,6 @@
             <a class="navbar-item" href="#">Service C</a>
           </div>
         </div>
-        <div class="navbar-item has-dropdown is-hoverable">
-          <a class="navbar-link" href="#">Resources</a>
-          <div class="navbar-dropdown">
-            <a class="navbar-item" href="#">Resource A</a>
-            <a class="navbar-item" href="#">Resource B</a>
-            <a class="navbar-item" href="#">Resource C</a>
-          </div>
-        </div>
         <div class="navbar-item">
           <span class="control">
             <a class="button is-primary" href="#">Download</a>
@@ -71,6 +62,18 @@
   </li>
   <li class="nav-item" data-depth="1">
     <a class="nav-link" href="../contributing.html">Contributing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../developer-guide.html">Developer Guide</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../crc-guide.html">CodeReady Containers Guide</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../sop.html">SOP</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../faq.html">FAQ</a>
   </li>
   <li class="nav-item" data-depth="1">
     <button class="nav-item-toggle"></button>
@@ -182,8 +185,8 @@
     <li><a href="kafka.html">Kafka</a></li>
   </ul>
 </nav>
-  <div class="edit-this-page"><a href="https://github.com/RedHatInsights/clowder/edit/master/docs/antora/modules/providers/pages/kafka.adoc">Edit this Page</a></div>
-  </div>
+<div class="edit-this-page"><a href="https://github.com/RedHatInsights/clowder/edit/master/docs/antora/modules/providers/pages/kafka.adoc">Edit this Page</a></div>
+</div>
   <div class="content">
 <aside class="toc sidebar" data-title="Contents" data-levels="2">
   <div class="toc-menu"></div>
@@ -235,25 +238,6 @@ spec:
 by the ClowdEnvironment. Depending on the environment you are running you may
 or may not have access to change this mode. More information on provider
 configuration is at the bottom of this page.</p>
-</div>
-<div class="sect2">
-<h3 id="_local"><a class="anchor" href="#_local"></a>local</h3>
-<div class="paragraph">
-<p>In local mode, the <strong>Kafka Provider</strong> will provision a single node kafka instance
-in the namespace defined in the <code>ClowdEnv</code> for the environment. This will
-comprise of a Zookeeper and Kafka pod. Topics will be created with minimal
-replicas/partitions as it is only a single node instance.</p>
-</div>
-<div class="paragraph">
-<p>ClowdEnv Config options available:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p><code>pvc</code></p>
-</li>
-</ul>
-</div>
 </div>
 <div class="sect2">
 <h3 id="_operator"><a class="anchor" href="#_operator"></a>operator</h3>
@@ -330,6 +314,24 @@ the <code>name</code> attribute of a topic when connecting to Kafka.</p>
 <div class="paragraph">
 <p>A helper is available below to facilitate quick access via a map.</p>
 </div>
+<div class="paragraph">
+<p>If a the <code>cacert</code> and <code>securityProtocol</code> fields are populated, then the kafka
+instance will be using TLS and the client should be configured as such</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+The <code>securityProtocol</code> field has been deprecated from within the SASL
+stanza and in the future will only be available at the top level broker
+stanza.
+</td>
+</tr>
+</table>
+</div>
 <div class="sect2">
 <h3 id="_json_structure"><a class="anchor" href="#_json_structure"></a>JSON structure</h3>
 <div class="listingblock">
@@ -339,7 +341,9 @@ the <code>name</code> attribute of a topic when connecting to Kafka.</p>
       "brokers": [
           {
               "hostname": "broker-host",
-              "port": 27015
+              "port": 27015,
+              "securityProtocol": "SSL",
+              "cacert": "&lt;some CA string&gt;"
           }
       ],
       "topics": [
@@ -354,7 +358,7 @@ the <code>name</code> attribute of a topic when connecting to Kafka.</p>
 </div>
 </div>
 <div class="paragraph">
-<p>A TLS/User auth enabled Kafka will look like this</p>
+<p>A User auth enabled Kafka will look like this</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -368,7 +372,8 @@ the <code>name</code> attribute of a topic when connecting to Kafka.</p>
               "cacert": "-----BEGIN CERTIFICATE-----\nMIIDLTCCAhWgAwIBAgIJAPOWU.........",
               "sasl":{
                   "username": "kafkausername",
-                  "password": "kafkapassword"
+                  "password": "kafkapassword",
+                  "securityProtocol": "SASL_SSL"
               }
           }
       ],
@@ -387,7 +392,7 @@ the <code>name</code> attribute of a topic when connecting to Kafka.</p>
 <div class="sect2">
 <h3 id="_client_access"><a class="anchor" href="#_client_access"></a>Client access</h3>
 <div class="paragraph">
-<p>For supported languages, the kafka configuration is access via the following
+<p>For supported languages, the kafka configuration is accessed via the following
 attribute names.</p>
 </div>
 <table class="tableblock frame-all grid-all stretch">
@@ -441,16 +446,99 @@ more information can be found in the API reference.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">    apiVersion: cloud.redhat.com/v1alpha1
-    kind: ClowdEnvivonment
+    kind: ClowdEnvironment
     metadata:
       name: myenv
     spec:
       # Other Env Config
       providers:
         kafka:
-          mode: local
+          mode: operator
           pvc: false</code></pre>
 </div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_cyndi"><a class="anchor" href="#_cyndi"></a>Cyndi</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The <strong>Cyndi</strong> attribute of a ClowdApp definition is responsible for ensuring the Cyndi host
+syndication process is in place for the ClowdApp. On Clowder managed environments, the
+provider is also responsible of creating the CyndiPipeline resource, and configuring the underlying
+<code>Kafka Connect</code> so that the data syndication from Host Inventory database to the app&#8217;s database
+works correctly.</p>
+</div>
+<div class="paragraph">
+<p><a href="https://docs.confluent.io/platform/current/connect/index.html#kafka-connect">Kafka Connect</a> is the core component used to perform Inventory’s host database
+syndication for some of the Insights platform applications, and uses an Operator to orchestrate
+the synchronization process.</p>
+</div>
+<div class="paragraph">
+<p>It does so by using a <code>CyndiPipeline</code> resource, which can be created by Clowder, and by injecting
+in the database secrets for both the target db (the application’s) and the host inventory db.</p>
+</div>
+<div class="paragraph">
+<p><a href="https://docs.confluent.io/platform/current/connect/index.html#kafka-connect">Kafka Connect</a> streams table updates to keep data syndicated between the host
+inventory db and the application’s hosts view.</p>
+</div>
+<div class="paragraph">
+<p>Please refer to the corresponing projects for more information about the
+<a href="https://consoledot.pages.redhat.com/docs/dev/services/inventory.html#cyndi">Cyndi project</a>, the <code>CyndiPipeline</code> resource or the <a href="https://github.com/RedHatInsights/cyndi-operator#cyndi-operator">Cyndi Operator</a>
+itself.</p>
+</div>
+<div class="sect2">
+<h3 id="_clowdapp_configuration_2"><a class="anchor" href="#_clowdapp_configuration_2"></a>ClowdApp Configuration</h3>
+<div class="paragraph">
+<p>In order to request a <code>ClowdApp</code> to get the host syndication enabled by Cyndi, the <code>Cyndi</code> stanza
+needs to be used. A snippet of how that config would look like follows.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml"># my-clowdapp.yml
+# ...
+cyndi:
+  enabled: true
+  appName: fancyapp
+  insightsOnly: true
+# ...</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The attributes are described in Clowder’s API Spec documentation <a href="https://redhatinsights.github.io/clowder/clowder/dev/api_reference.html#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-cyndispec">here</a></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>enabled</strong> <code>[bool] default: true</code> - enables or disables the Cyndi dependency for this particular ClowdApp resource.</p>
+</li>
+<li>
+<p><strong>appName</strong> <code>[str] default: ''</code> - a string that sets the unique identifier of this ClowdApp on Cyndi.</p>
+</li>
+<li>
+<p><strong>insightsOnly</strong> <code>[bool] default: false</code> - enables the data syndication for all hosts or Insights hosts only.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_clowdenv_configuration_3"><a class="anchor" href="#_clowdenv_configuration_3"></a>ClowdEnv Configuration</h3>
+<div class="paragraph">
+<p>The <strong>Cyndi</strong> provider will run in one of the two following modes, depending on whether if Clowder
+manages the environment or not;</p>
+</div>
+<div class="paragraph">
+<p>On non-Clowder managed environments (at the time of this writing, Stage and Production) Clowder
+will only check that the CyndiPipeline resource is available for the Clowdapp that is being
+reconciled in case it has the “cyndi” flag enabled in it’s template definition.
+Clowder will not try to create or update any resource related to Cyndi on environments it does not
+manage.</p>
+</div>
+<div class="paragraph">
+<p>On Clowder managed environments (Ephemeral environment) Clowder will configure and deploy Kafka
+using the Strimzi operator and will setup the CyndiPipeline to enable the host syndication process
+for the Clowdapps that require it on their spec files (see <a href="https://redhatinsights.github.io/clowder/clowder/dev/api_reference.html#k8s-api-github-com-redhatinsights-clowder-apis-cloud-redhat-com-v1alpha1-cyndispec">Clowder API reference</a>)</p>
 </div>
 </div>
 </div>
@@ -463,7 +551,7 @@ more information can be found in the API reference.</p>
   <p>This page was built using the Antora default UI.</p>
   <p>The source code for this UI is licensed under the terms of the MPL-2.0 license.</p>
 </footer>
-<script src="../../../ui/js/site.js"></script>
+<script id="site-script" src="../../../ui/js/site.js" data-ui-root-path="../../../ui"></script>
 <script async src="../../../ui/js/vendor/highlight.js"></script>
   </body>
 </html>

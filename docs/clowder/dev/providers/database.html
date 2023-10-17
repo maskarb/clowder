@@ -5,9 +5,8 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Database Provider :: Clowder Documentation</title>
     <link rel="canonical" href="https://redhatinsights.github.io/clowder/clowder/dev/providers/database.html">
-    <meta name="generator" content="Antora 2.3.4">
+    <meta name="generator" content="Antora 3.1.4">
     <link rel="stylesheet" href="../../../ui/css/site.css">
-    <script>var uiRootPath = '../../../ui'</script>
   </head>
   <body class="article">
 <header class="header">
@@ -39,14 +38,6 @@
             <a class="navbar-item" href="#">Service C</a>
           </div>
         </div>
-        <div class="navbar-item has-dropdown is-hoverable">
-          <a class="navbar-link" href="#">Resources</a>
-          <div class="navbar-dropdown">
-            <a class="navbar-item" href="#">Resource A</a>
-            <a class="navbar-item" href="#">Resource B</a>
-            <a class="navbar-item" href="#">Resource C</a>
-          </div>
-        </div>
         <div class="navbar-item">
           <span class="control">
             <a class="button is-primary" href="#">Download</a>
@@ -71,6 +62,18 @@
   </li>
   <li class="nav-item" data-depth="1">
     <a class="nav-link" href="../contributing.html">Contributing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../developer-guide.html">Developer Guide</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../crc-guide.html">CodeReady Containers Guide</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../sop.html">SOP</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../faq.html">FAQ</a>
   </li>
   <li class="nav-item" data-depth="1">
     <button class="nav-item-toggle"></button>
@@ -182,8 +185,8 @@
     <li><a href="database.html">Database</a></li>
   </ul>
 </nav>
-  <div class="edit-this-page"><a href="https://github.com/RedHatInsights/clowder/edit/master/docs/antora/modules/providers/pages/database.adoc">Edit this Page</a></div>
-  </div>
+<div class="edit-this-page"><a href="https://github.com/RedHatInsights/clowder/edit/master/docs/antora/modules/providers/pages/database.adoc">Edit this Page</a></div>
+</div>
   <div class="content">
 <aside class="toc sidebar" data-title="Contents" data-levels="2">
   <div class="toc-menu"></div>
@@ -218,6 +221,35 @@ spec:
     version: 12</code></pre>
 </div>
 </div>
+<div class="sect2">
+<h3 id="_using_a_shared_database_across_multiple_clowdapps"><a class="anchor" href="#_using_a_shared_database_across_multiple_clowdapps"></a>Using a Shared Database across multiple ClowdApps</h3>
+<div class="paragraph">
+<p>To share a database from one ClowdApp to another Clowder supports sharing a database
+declared in one ClowdApp with many others.</p>
+</div>
+<div class="paragraph">
+<p>Request a database like above, but then in your dependent ClowdApp resource set up
+the shared configuration like so:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdApp
+metadata:
+  name: myapp-worker
+spec:
+  # Other App Config
+  database:
+    sharedDbAppName: myapp
+  dependenceis:
+  - myapp</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This example would set up <code>myapp-worker</code> looking at the same database as <code>myapp</code>.
+The strings need to be the same.</p>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -248,6 +280,18 @@ normal user and an admin user.</p>
 <p><code>pvc</code></p>
 </li>
 </ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_shared"><a class="anchor" href="#_shared"></a>shared</h4>
+<div class="paragraph">
+<p>In shared mode, the <strong>Database Provider</strong> will provision a single node PostgreSQL
+and configure every app to use the same instance. As in the local mode, the client
+will be given credentials for both a normal and an admin user.</p>
+</div>
+<div class="paragraph">
+<p>ClowdEnv Config options available:
+- <code>pvc</code></p>
 </div>
 </div>
 <div class="sect3">
@@ -387,7 +431,7 @@ options, more information can be found in the API reference.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">apiVersion: cloud.redhat.com/v1alpha1
-kind: ClowdEnvivonment
+kind: ClowdEnvironment
 metadata:
   name: myenv
 spec:
@@ -409,7 +453,7 @@ spec:
   <p>This page was built using the Antora default UI.</p>
   <p>The source code for this UI is licensed under the terms of the MPL-2.0 license.</p>
 </footer>
-<script src="../../../ui/js/site.js"></script>
+<script id="site-script" src="../../../ui/js/site.js" data-ui-root-path="../../../ui"></script>
 <script async src="../../../ui/js/vendor/highlight.js"></script>
   </body>
 </html>

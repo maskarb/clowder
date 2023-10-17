@@ -5,9 +5,8 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Feature Flags Provider :: Clowder Documentation</title>
     <link rel="canonical" href="https://redhatinsights.github.io/clowder/clowder/dev/providers/featureflags.html">
-    <meta name="generator" content="Antora 2.3.4">
+    <meta name="generator" content="Antora 3.1.4">
     <link rel="stylesheet" href="../../../ui/css/site.css">
-    <script>var uiRootPath = '../../../ui'</script>
   </head>
   <body class="article">
 <header class="header">
@@ -39,14 +38,6 @@
             <a class="navbar-item" href="#">Service C</a>
           </div>
         </div>
-        <div class="navbar-item has-dropdown is-hoverable">
-          <a class="navbar-link" href="#">Resources</a>
-          <div class="navbar-dropdown">
-            <a class="navbar-item" href="#">Resource A</a>
-            <a class="navbar-item" href="#">Resource B</a>
-            <a class="navbar-item" href="#">Resource C</a>
-          </div>
-        </div>
         <div class="navbar-item">
           <span class="control">
             <a class="button is-primary" href="#">Download</a>
@@ -71,6 +62,18 @@
   </li>
   <li class="nav-item" data-depth="1">
     <a class="nav-link" href="../contributing.html">Contributing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../developer-guide.html">Developer Guide</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../crc-guide.html">CodeReady Containers Guide</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../sop.html">SOP</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../faq.html">FAQ</a>
   </li>
   <li class="nav-item" data-depth="1">
     <button class="nav-item-toggle"></button>
@@ -182,8 +185,8 @@
     <li><a href="featureflags.html">Feature Flags</a></li>
   </ul>
 </nav>
-  <div class="edit-this-page"><a href="https://github.com/RedHatInsights/clowder/edit/master/docs/antora/modules/providers/pages/featureflags.adoc">Edit this Page</a></div>
-  </div>
+<div class="edit-this-page"><a href="https://github.com/RedHatInsights/clowder/edit/master/docs/antora/modules/providers/pages/featureflags.adoc">Edit this Page</a></div>
+</div>
   <div class="content">
 <aside class="toc sidebar" data-title="Contents" data-levels="2">
   <div class="toc-menu"></div>
@@ -227,6 +230,13 @@ spec:
 instance will be created when the <code>ClowdEnv</code> is deployed.</p>
 </div>
 </div>
+<div class="sect2">
+<h3 id="_app_interface"><a class="anchor" href="#_app_interface"></a>app-interface</h3>
+<div class="paragraph">
+<p>In app-interface mode, the <strong>Feature Flags Provider</strong> will look up the secret defined in the
+environment spec and return the hostname, port and access token in the cdapp configuration.</p>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -244,6 +254,7 @@ following structure.</p>
   "featureFlags": {
     "hostname": "ff-server.server.example.com",
     "port": 4242
+    "clientAccessToken": "someaccesstoken"
   }
 }</code></pre>
 </div>
@@ -273,7 +284,7 @@ following attribute names.</p>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Go</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>LoadedConfig.featureFlags</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>LoadedConfig.FeatureFlags</code></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Javscript</p></td>
@@ -298,7 +309,7 @@ options, more information can be found in the API reference.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">apiVersion: cloud.redhat.com/v1alpha1
-kind: ClowdEnvivonment
+kind: ClowdEnvironment
 metadata:
   name: myenv
 spec:
@@ -307,6 +318,25 @@ spec:
     featureFlags:
       mode: local
       pvc: false</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>App-interface mode requires a little more configuration:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: myenv
+spec:
+  # Other Env Config
+  providers:
+    featureFlags:
+      mode: app-interface
+      hostname: app-interface-ff-server
+      port: 1234
+      credentialRef: the name of the app-interface Unleash credential secret</code></pre>
 </div>
 </div>
 </div>
@@ -320,7 +350,7 @@ spec:
   <p>This page was built using the Antora default UI.</p>
   <p>The source code for this UI is licensed under the terms of the MPL-2.0 license.</p>
 </footer>
-<script src="../../../ui/js/site.js"></script>
+<script id="site-script" src="../../../ui/js/site.js" data-ui-root-path="../../../ui"></script>
 <script async src="../../../ui/js/vendor/highlight.js"></script>
   </body>
 </html>

@@ -5,9 +5,8 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Web Provider :: Clowder Documentation</title>
     <link rel="canonical" href="https://redhatinsights.github.io/clowder/clowder/dev/providers/web.html">
-    <meta name="generator" content="Antora 2.3.4">
+    <meta name="generator" content="Antora 3.1.4">
     <link rel="stylesheet" href="../../../ui/css/site.css">
-    <script>var uiRootPath = '../../../ui'</script>
   </head>
   <body class="article">
 <header class="header">
@@ -39,14 +38,6 @@
             <a class="navbar-item" href="#">Service C</a>
           </div>
         </div>
-        <div class="navbar-item has-dropdown is-hoverable">
-          <a class="navbar-link" href="#">Resources</a>
-          <div class="navbar-dropdown">
-            <a class="navbar-item" href="#">Resource A</a>
-            <a class="navbar-item" href="#">Resource B</a>
-            <a class="navbar-item" href="#">Resource C</a>
-          </div>
-        </div>
         <div class="navbar-item">
           <span class="control">
             <a class="button is-primary" href="#">Download</a>
@@ -71,6 +62,18 @@
   </li>
   <li class="nav-item" data-depth="1">
     <a class="nav-link" href="../contributing.html">Contributing</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../developer-guide.html">Developer Guide</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../crc-guide.html">CodeReady Containers Guide</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../sop.html">SOP</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../faq.html">FAQ</a>
   </li>
   <li class="nav-item" data-depth="1">
     <button class="nav-item-toggle"></button>
@@ -182,8 +185,8 @@
     <li><a href="web.html">Web</a></li>
   </ul>
 </nav>
-  <div class="edit-this-page"><a href="https://github.com/RedHatInsights/clowder/edit/master/docs/antora/modules/providers/pages/web.adoc">Edit this Page</a></div>
-  </div>
+<div class="edit-this-page"><a href="https://github.com/RedHatInsights/clowder/edit/master/docs/antora/modules/providers/pages/web.adoc">Edit this Page</a></div>
+</div>
   <div class="content">
 <aside class="toc sidebar" data-title="Contents" data-levels="2">
   <div class="toc-menu"></div>
@@ -221,6 +224,9 @@ spec:
     webServices:
       public:
         enabled: true
+        apiPath: hello
+        whitelistPaths:
+        - /api/hello/openapi.json
       private:
         enabled: true</code></pre>
 </div>
@@ -256,7 +262,143 @@ deployment.</p>
 <li>
 <p><code>apiPrefix</code></p>
 </li>
+<li>
+<p><code>BOPURL</code></p>
+</li>
 </ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_local"><a class="anchor" href="#_local"></a>local</h3>
+<div class="paragraph">
+<p>In local mode, the <strong>Web Provider</strong> will setup an entire mocked backend including
+SSO, BOP and an aggregated gateway.</p>
+</div>
+<div class="paragraph">
+<p>All pods which have the <code>webServices.public.enabled</code> set to <code>true</code> will also
+have an auth pod injected into them which will be configured to work with the
+SSO server and BOP URL. This will have a new port added to the service which
+the gateway will be configured to use.</p>
+</div>
+<div class="paragraph">
+<p>The <code>apiPath</code> parameter sets the URL that the service will be routed for. <code>/api/&lt;apiPath&gt;</code> will
+be configured to route to the <code>auth</code> service port for that deployment.</p>
+</div>
+<div class="paragraph">
+<p>The <code>whitelistPaths</code> parameter sets the paths that will not be required to go through authentication. These paths will always be able to be hit without auth. The following declarations are possible</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>/absolute/path</p>
+</li>
+<li>
+<p>*prefixed/path</p>
+</li>
+<li>
+<p>/suffixed/path*</p>
+</li>
+<li>
+<p>*</p>
+</li>
+</ul>
+</div>
+<div class="sect3">
+<h4 id="_mtls_cert_auth"><a class="anchor" href="#_mtls_cert_auth"></a>mTLS cert-auth</h4>
+<div class="paragraph">
+<p>Clowder also creates a cert-auth based gateway which can handle the mTLS flow
+that is used in ConsoleDot for client machines. This creates a new gateway pod
+which uses the same image as the sidecar, and configures an individual route
+for each web service.</p>
+</div>
+<div class="paragraph">
+<p>Note:
+Just because a service is accessible via cert-auth in <strong>local</strong> mode, does not mean it is
+accessible in stage/production. Right now, there is no distinction between apps
+that are and apps that are not available. This could change in the future, and would
+require a ClowdApp flag addition.</p>
+</div>
+<div class="paragraph">
+<p>The OpenShift or Minikube cluster is configured to passthrough SSL to this
+gateway, which enforcs strict SNI and requires mTLS.</p>
+</div>
+<div class="sect4">
+<h5 id="_registration_of_cert"><a class="anchor" href="#_registration_of_cert"></a>Registration of cert</h5>
+<div class="paragraph">
+<p>To facilitate cert-auth to be used in an environment the client must first
+register the <code>CN</code> presented inside the clients cert, which has been signed by the
+CA recognised by the Caddy Gateway. By default this CA is the <code>candlepin-ca</code> so
+that machines may register to the real RHSM and use this cert in a local
+instance.</p>
+</div>
+<div class="paragraph">
+<p>Note:
+A <strong>local</strong> instance here corresponds to a ClowdEnvironment that has the <strong>Web
+Provider</strong> set to <strong>local</strong> mode. This is the case for ephemeral environments.</p>
+</div>
+<div class="paragraph">
+<p>The registration must be performed using an existing user account in the org,
+and that user must be an <code>orgAdmin</code>. The default user provided with the <strong>local</strong>
+setup, has these permissions.</p>
+</div>
+<div class="paragraph">
+<p>The registration command should look similar to the following, notice the UUID
+is the same in all places for this example and <strong>MUST</strong> follow a UUID format:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-text hljs" data-lang="text">&gt; cat /tmp/test.json
+{"uid": "36f23107-9b7c-48f6-8d5b-e6691e7dd235", "display_name": "36f23107-9b7c-48f6-8d5b-e6691e7dd235"}
+
+&gt; curl -k http://environment-host/v1/registrations -H "Authorization: Basic $EPHEM_BASE64" -vvv -H "Content-Type: application/json" -d @/tmp/test.json -H "x-rh-certauth-cn:/CN=36f23107-9b7c-48f6-8d5b-e6691e7dd235"</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>orgID</code> of the user credentials used to call the registrations endpoint will
+be used to register this <code>CN</code>.</p>
+</div>
+<div class="paragraph">
+<p>Note:
+In systems registered with RHSM, there is an <code>orgId</code> present in the certificate,
+but this will be ignored when registering with the registrations endpoint, as it
+is not relevant to a local environment, which has been provisioned with it&#8217;s own
+Keycloak and hence its own <code>orgIDs</code>.</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_making_api_calls_with_certs"><a class="anchor" href="#_making_api_calls_with_certs"></a>Making API calls with certs</h5>
+<div class="paragraph">
+<p>The client cert/key combination can now be used to make API requests to services
+via a new hostname with <code>-cert</code> appended. An example of this is shown below</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-text hljs" data-lang="text">&gt; curl https://environment-host-cert/api/puptoo/ -vvv --key /tmp/tls.key --cert /tmp/tls.crt"</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>ClowdEnv Config options available:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>port</code></p>
+</li>
+<li>
+<p><code>privatePort</code></p>
+</li>
+<li>
+<p><code>apiPrefix</code></p>
+</li>
+<li>
+<p><code>authPort</code></p>
+</li>
+<li>
+<p><code>gatewayCert</code></p>
+</li>
+</ul>
+</div>
+</div>
 </div>
 </div>
 </div>
@@ -324,7 +466,7 @@ path as follows in this example.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">apiVersion: cloud.redhat.com/v1alpha1
-kind: ClowdEnvivonment
+kind: ClowdEnvironment
 metadata:
   name: myenv
 spec:
@@ -334,6 +476,110 @@ spec:
       mode: operator
       privatePort: 10000
       port: 8000</code></pre>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_tls_auth"><a class="anchor" href="#_tls_auth"></a>TLS Auth</h4>
+<div class="paragraph">
+<p>The <strong>Web Provider</strong> also features a TLS sidecar option which will dynamically create and append an
+Envoy sidecar to the deployment pod. This requires enabling in the configuration with an example
+below.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: myenv
+spec:
+  # Other Env Config
+  providers:
+    web:
+      # As above
+      tls:
+        enabled: true
+        port: 18000
+        privatePort: 18800</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This configuration will do several things:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Creates TLS annotations on the deployment&#8217;s <code>Service</code> resource to allow <strong>OpenShift</strong> to create the
+cert <code>Secret</code></p>
+</li>
+<li>
+<p>Add new ports to the <code>Service</code> resource based on if the app has <strong>public</strong> or <strong>private</strong> ports
+enabled</p>
+</li>
+<li>
+<p>Creates a <code>ConfigMap</code> for the <strong>Envoy</strong> sidecar</p>
+</li>
+<li>
+<p>Adds the <strong>Envoy</strong> sidecar to the app&#8217;s pod</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Sets VolumeMounts/Volumes for the config</p>
+</li>
+<li>
+<p>Sets VolumeMounts/Volumes for the cert/key</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Adds VolumeMounts/Volumes to the app&#8217;s deployment to mount the CA chain, which is available in
+every namespace via <strong>OpenShift</strong></p>
+</li>
+<li>
+<p>Adds container ports to the app&#8217;s deployment based on if the app has <strong>public</strong> or <strong>private</strong>
+ports enabled</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Applications are then able to connect to other services in the cluster using the enpoints listed
+in the <code>cdappconfig.json</code>. A <code>tlsCAPath</code> field is in the <code>cdappconfig.json</code> to tell people where the
+CA cert chain can be found for connecting to other services. All certs are registered against the
+full hostname including <strong>namespace</strong> and <strong>svc</strong>. These hostnames are present in full in the endpoints
+list and should be taken from there.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_customizing_cert_auth"><a class="anchor" href="#_customizing_cert_auth"></a>Customizing Cert Auth</h4>
+<div class="paragraph">
+<p>The ClowdEnvironment can be configured to work with both <code>acme</code> and <code>self-signed</code>
+certs by using the <code>spec.provides.web.gatewayCert.certMode</code> flag.</p>
+</div>
+<div class="paragraph">
+<p>Custom CA certs may also be used by supplying the correct configuration as detailed below.
+The <code>localCaConfigMap</code> field should point to a ConfigMap in the env namespace and
+is expected to have the CA in PEM format <code>ca.pem</code> field.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">apiVersion: cloud.redhat.com/v1alpha1
+kind: ClowdEnvironment
+metadata:
+  name: myenv
+spec:
+  # Other Env Config
+  providers:
+    web:
+      # As above
+      gatewayCert:
+        enabled: true
+        certMode: self-signed
+        localCAConfigMap: my-configmap</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For <code>acme</code> cert generation an <code>emailAddress</code> field needs to be supplied with the email address
+to use for the cert generation.</p>
 </div>
 </div>
 </div>
@@ -347,7 +593,7 @@ spec:
   <p>This page was built using the Antora default UI.</p>
   <p>The source code for this UI is licensed under the terms of the MPL-2.0 license.</p>
 </footer>
-<script src="../../../ui/js/site.js"></script>
+<script id="site-script" src="../../../ui/js/site.js" data-ui-root-path="../../../ui"></script>
 <script async src="../../../ui/js/vendor/highlight.js"></script>
   </body>
 </html>
